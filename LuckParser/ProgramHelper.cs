@@ -1,14 +1,14 @@
-﻿using LuckParser.Exceptions;
-using LuckParser.Parser;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using LuckParser.Controllers;
 using System.IO;
+using System.IO.Compression;
+using System.Text;
 using System.Threading;
 using LuckParser.Builders;
-using System.IO.Compression;
+using LuckParser.Controllers;
+using LuckParser.Exceptions;
+using LuckParser.Parser;
 
 namespace LuckParser
 {
@@ -49,18 +49,18 @@ namespace LuckParser
             }
         }
 
-        private readonly static HashSet<string> _compressedFiles = new HashSet<string>()
+        private static readonly HashSet<string> _compressedFiles = new HashSet<string>()
         {
             ".zevtc",
             ".evtc.zip",
         };
 
-        private readonly static HashSet<string> _tmpFiles = new HashSet<string>()
+        private static readonly HashSet<string> _tmpFiles = new HashSet<string>()
         {
             ".tmp.zip"
         };
 
-        private readonly static HashSet<string> _supportedFiles = new HashSet<string>(_compressedFiles)
+        private static readonly HashSet<string> _supportedFiles = new HashSet<string>(_compressedFiles)
         {
             ".evtc"
         };
@@ -106,15 +106,14 @@ namespace LuckParser
             System.Globalization.CultureInfo before = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture =
                     new System.Globalization.CultureInfo("en-US");
-            UploadController up_controller = new UploadController();
-            FileInfo fInfo = new FileInfo(row.Location);
+            var fInfo = new FileInfo(row.Location);
             try
             {
                 if (!fInfo.Exists)
                 {
                     throw new FileNotFoundException("File " + fInfo.FullName + " does not exist");
                 }
-                ParsingController control = new ParsingController();
+                var control = new ParsingController();
 
                 if (!HasFormat())
                 {
@@ -125,7 +124,7 @@ namespace LuckParser
                 {
                     //Process evtc here
                     ParsedLog log = control.ParseLog(row, fInfo.FullName);
-                    string[] uploadresult = up_controller.UploadOperation(row, fInfo);
+                    string[] uploadresult = UploadController.UploadOperation(row, fInfo);
                     //Creating File
                     GenerateFiles(log, row, uploadresult, fInfo);
                 }
@@ -149,18 +148,14 @@ namespace LuckParser
         {
             // Create the compressed file.
             byte[] data = str.ToArray();
-            using (FileStream outFile =
-                        File.Create(file + ".gz"))
-            {
-                using (GZipStream Compress =
-                    new GZipStream(outFile,
-                    CompressionMode.Compress))
-                {
-                    // Copy the source file into 
-                    // the compression stream.
-                    Compress.Write(data, 0, data.Length);
-                }
-            }
+            using FileStream outFile =
+                        File.Create(file + ".gz");
+            using var Compress =
+new GZipStream(outFile,
+CompressionMode.Compress);
+            // Copy the source file into 
+            // the compression stream.
+            Compress.Write(data, 0, data.Length);
         }
 
         private static void GenerateFiles(ParsedLog log, GridRow rowData, string[] uploadresult, FileInfo fInfo)
@@ -199,12 +194,10 @@ namespace LuckParser
                 $"{fName}.html"
                 );
                 rowData.LogLocation = outputFile;
-                using (var fs = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
-                using (var sw = new StreamWriter(fs))
-                {
-                    var builder = new HTMLBuilder(log, uploadresult);
-                    builder.CreateHTML(sw, saveDirectory.FullName);
-                }
+                using var fs = new FileStream(outputFile, FileMode.Create, FileAccess.Write);
+                using var sw = new StreamWriter(fs);
+                var builder = new HTMLBuilder(log, uploadresult);
+                builder.CreateHTML(sw, saveDirectory.FullName);
             }
             rowData.BgWorker.ThrowIfCanceled(rowData);
             if (Properties.Settings.Default.SaveOutCSV)
@@ -216,12 +209,10 @@ namespace LuckParser
                 string splitString = "";
                 if (rowData.LogLocation != null) { splitString = ","; }
                 rowData.LogLocation += splitString + outputFile;
-                using (var fs = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
-                using (var sw = new StreamWriter(fs, Encoding.GetEncoding(1252)))
-                {
-                    var builder = new CSVBuilder(sw, ",", log, uploadresult);
-                    builder.CreateCSV();
-                }
+                using var fs = new FileStream(outputFile, FileMode.Create, FileAccess.Write);
+                using var sw = new StreamWriter(fs, Encoding.GetEncoding(1252));
+                var builder = new CSVBuilder(sw, ",", log, uploadresult);
+                builder.CreateCSV();
             }
             rowData.BgWorker.ThrowIfCanceled(rowData);
             if (Properties.Settings.Default.SaveOutJSON)
@@ -237,7 +228,8 @@ namespace LuckParser
                 if (Properties.Settings.Default.CompressRaw)
                 {
                     str = new MemoryStream();
-                } else
+                }
+                else
                 {
                     str = new FileStream(outputFile, FileMode.Create, FileAccess.Write);
                 }

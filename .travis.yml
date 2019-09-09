@@ -1,2 +1,13 @@
-language: csharp
+dist: xenial
+addons:
+  snaps:
+  - name: dotnet-sdk
+    classic: true
+    channel: latest/beta
+sudo: required
 solution: LuckParser.sln
+language: csharp
+mono: none
+script:
+  - sudo snap alias dotnet-sdk.dotnet dotnet
+  - dotnet --version
