@@ -181,6 +181,8 @@ namespace LuckParser
                     return "https://i.imgur.com/Q4WUXqw.png";
                 case ParseEnum.TargetIDS.PeerlessQadim:
                     return "https://i.imgur.com/47uePpb.png";
+                case ParseEnum.TargetIDS.IcebroodConstruct:
+                    return "https://i.imgur.com/dpaZFa5.png";
                 case ParseEnum.TargetIDS.MAMA:
                     return "https://i.imgur.com/1h7HOII.png";
                 case ParseEnum.TargetIDS.Siax:

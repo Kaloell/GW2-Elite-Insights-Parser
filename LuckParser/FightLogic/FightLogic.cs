@@ -148,7 +148,7 @@ namespace LuckParser.Logic
                 AbstractBuffEvent c = invuls[i];
                 if (c is BuffApplyEvent)
                 {
-                    long end = c.Time;
+                    long end = Math.Min(c.Time, fightDuration);
                     phases.Add(new PhaseData(last, end));
                     /*if (i == invuls.Count - 1)
                     {
@@ -158,7 +158,7 @@ namespace LuckParser.Logic
                 }
                 else
                 {
-                    long end = c.Time;
+                    long end = Math.Min(c.Time, fightDuration);
                     if (addSkipPhases)
                     {
                         phases.Add(new PhaseData(last, end));
@@ -284,7 +284,7 @@ namespace LuckParser.Logic
                 {
                     long time = killed.Time;
                     success++;
-                    AbstractDamageEvent lastDamageTaken = combatData.GetDamageTakenData(target.AgentItem).LastOrDefault(x => (x.Damage > 0) && (playerAgents.Contains(x.From) || playerAgents.Contains(x.MasterFrom)));
+                    AbstractDamageEvent lastDamageTaken = combatData.GetDamageTakenData(target.AgentItem).LastOrDefault(x => (x.Damage > 0) && (playerAgents.Contains(x.From) || playerAgents.Contains(x.From.Master)));
                     if (lastDamageTaken != null)
                     {
                         time = Math.Min(lastDamageTaken.Time, time);
@@ -328,7 +328,7 @@ namespace LuckParser.Logic
                 {
                     targetExits.AddRange(combatData.GetExitCombatEvents(t.AgentItem));
                 }
-                AbstractDamageEvent lastDamage = combatData.GetDamageTakenData(t.AgentItem).LastOrDefault(x => (x.Damage > 0) && (playerAgents.Contains(x.From) || playerAgents.Contains(x.MasterFrom)));
+                AbstractDamageEvent lastDamage = combatData.GetDamageTakenData(t.AgentItem).LastOrDefault(x => (x.Damage > 0) && (playerAgents.Contains(x.From) || playerAgents.Contains(x.From.Master)));
                 if (lastDamage != null)
                 {
                     lastTargetDamages.Add(lastDamage);

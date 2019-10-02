@@ -84,24 +84,19 @@ namespace LuckParser.Logic
             bool sortCombatList = false;
             foreach (AgentItem riverOfSoul in riverOfSouls)
             {
-                CombatItem firstMovement = combatData.FirstOrDefault(x => x.IsStateChange == ParseEnum.StateChange.Velocity && x.SrcInstid == riverOfSoul.InstID && x.LogTime <= riverOfSoul.LastAwareLogTime);
+                CombatItem firstMovement = combatData.FirstOrDefault(x => x.IsStateChange == ParseEnum.StateChange.Velocity && x.SrcAgent == riverOfSoul.Agent);
                 if (firstMovement != null)
                 {
                     // update start
                     riverOfSoul.FirstAwareLogTime = firstMovement.LogTime - 10;
                     foreach (CombatItem c in combatData)
                     {
-                        if (c.SrcInstid == riverOfSoul.InstID && c.LogTime < riverOfSoul.FirstAwareLogTime && (c.IsStateChange == ParseEnum.StateChange.Position || c.IsStateChange == ParseEnum.StateChange.Rotation))
+                        if (c.SrcAgent == riverOfSoul.Agent && (c.IsStateChange == ParseEnum.StateChange.Position || c.IsStateChange == ParseEnum.StateChange.Rotation))
                         {
                             sortCombatList = true;
                             c.OverrideTime(riverOfSoul.FirstAwareLogTime);
                         }
                     }
-                }
-                else
-                {
-                    // otherwise remove the agent from the pool
-                    agentData.RemoveAgent(riverOfSoul);
                 }
             }
             // make sure the list is still sorted by time after overrides
