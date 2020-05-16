@@ -116,7 +116,7 @@ class Animator {
             const actor = actors[i];
             switch (actor.type) {
                 case "Player":
-                    this.playerData.set(actor.id, new PlayerIconDrawable(actor.img, 20, actor.group, actor.positions, actor.dead, actor.down, actor.dc));
+                    this.playerData.set(actor.id, new PlayerIconDrawable(actor.img, 20, actor.group, actor.positions, actor.dead, actor.down, actor.dc, this, actor));
                     if (this.times.length === 0) {
                         for (let j = 0; j < actor.positions.length / 2; j++) {
                             this.times.push(j * this.pollingRate);
@@ -679,7 +679,7 @@ class IconDrawable {
 }
 
 class PlayerIconDrawable extends IconDrawable {
-    constructor(imgSrc, pixelSize, group, pos, dead, down, dc) {
+    constructor(imgSrc, pixelSize, group, pos, dead, down, dc, animator, actor) {
         super(-1, -1, imgSrc, pixelSize);
         this.pos = pos;
         this.dead = dead;
@@ -687,6 +687,8 @@ class PlayerIconDrawable extends IconDrawable {
         this.dc = dc;
         this.selected = false;
         this.group = group;
+        this.animator = animator;
+        this.actor = actor;
     }
 
     draw() {
@@ -709,11 +711,71 @@ class PlayerIconDrawable extends IconDrawable {
             ctx.strokeStyle = 'green';
             ctx.rect(pos.x - halfSize, pos.y - halfSize, fullSize, fullSize);
             ctx.stroke();
+
+
+            console.log(this);
+            console.log(this.actor, this.actor.id);
+            console.log(this.animator, this.animator.attachedActorData, this.animator.attachedActorData.has(this.actor.id));
+            console.log(this.animator.attachedActorData.get(this.actor.id), this.animator.attachedActorData.get(this.actor.id).getRotation());
+
+            const rot = this.animator.attachedActorData.get(this.actor.id).getRotation();
+            const angle = rot * Math.PI / 180;
+            const startAngle = angle - 0.25 * Math.PI;
+            const endAngle = angle + 0.25 * Math.PI;
+            console.log(rot, angle, startAngle, endAngle);
+
+            /*
+            const pos = this.getPosition();
+            const rot = this.getRotation();
+            if (pos === null || rot === null) {
+                return;
+            }
+            var ctx = animator.mainContext;
+            const angle = rot * Math.PI / 180;
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate(angle);
+            const facingFullSize = 5 * this.master.pixelSize / (3 * animator.scale);
+            const facingHalfSize = facingFullSize / 2;
+            ctx.drawImage(facingIcon, -facingHalfSize, -facingHalfSize, facingFullSize, facingFullSize);
+            ctx.restore();
+
+
+            if (_this.attachedActorData.has(key)) {
+                _this.attachedActorData.get(key).draw();
+            }
+            */
+
             animator.rangeControl.forEach(function (present, radius, set) {
+                const startX = animator.inch * radius * Math.cos(startAngle) + pos.x;
+                const startY = animator.inch * radius * Math.sin(startAngle) + pos.y;
+
+                const endX = animator.inch * radius * Math.cos(endAngle) + pos.x;
+                const endY = animator.inch * radius * Math.sin(endAngle) + pos.y;
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'blue';
+                ctx.lineWidth = (2 / animator.scale).toString();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(startX, startY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'blue';
+                ctx.lineWidth = (2 / animator.scale).toString();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.lineWidth = (2 / animator.scale).toString();
+                ctx.strokeStyle = 'blue';
+                ctx.arc(pos.x, pos.y, animator.inch * radius, startAngle, endAngle);
+                ctx.stroke();
                 ctx.beginPath();
                 ctx.lineWidth = (2 / animator.scale).toString();
                 ctx.strokeStyle = 'green';
-                ctx.arc(pos.x, pos.y, animator.inch * radius, 0, 2 * Math.PI);
+                ctx.arc(pos.x, pos.y, animator.inch * radius, startAngle, endAngle, true);
                 ctx.stroke();
             });
         }
