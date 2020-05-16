@@ -712,39 +712,10 @@ class PlayerIconDrawable extends IconDrawable {
             ctx.rect(pos.x - halfSize, pos.y - halfSize, fullSize, fullSize);
             ctx.stroke();
 
-
-            console.log(this);
-            console.log(this.actor, this.actor.id);
-            console.log(this.animator, this.animator.attachedActorData, this.animator.attachedActorData.has(this.actor.id));
-            console.log(this.animator.attachedActorData.get(this.actor.id), this.animator.attachedActorData.get(this.actor.id).getRotation());
-
             const rot = this.animator.attachedActorData.get(this.actor.id).getRotation();
             const angle = rot * Math.PI / 180;
             const startAngle = angle - 0.25 * Math.PI;
             const endAngle = angle + 0.25 * Math.PI;
-            console.log(rot, angle, startAngle, endAngle);
-
-            /*
-            const pos = this.getPosition();
-            const rot = this.getRotation();
-            if (pos === null || rot === null) {
-                return;
-            }
-            var ctx = animator.mainContext;
-            const angle = rot * Math.PI / 180;
-            ctx.save();
-            ctx.translate(pos.x, pos.y);
-            ctx.rotate(angle);
-            const facingFullSize = 5 * this.master.pixelSize / (3 * animator.scale);
-            const facingHalfSize = facingFullSize / 2;
-            ctx.drawImage(facingIcon, -facingHalfSize, -facingHalfSize, facingFullSize, facingFullSize);
-            ctx.restore();
-
-
-            if (_this.attachedActorData.has(key)) {
-                _this.attachedActorData.get(key).draw();
-            }
-            */
 
             animator.rangeControl.forEach(function (present, radius, set) {
                 const startX = animator.inch * radius * Math.cos(startAngle) + pos.x;
